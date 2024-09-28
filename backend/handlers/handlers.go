@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/vpreseault/hack-the-hill-2/backend/cookies"
 	"github.com/vpreseault/hack-the-hill-2/backend/database"
@@ -11,18 +13,16 @@ import (
 
 func Root() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		response := `
-		<html>
-		<body>
-			<h1>Hello World</h1>
-		</body>
-		</html>
-		`
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(response))
+		tmpl, err := template.ParseFiles(filepath.Join("..", "frontend", "index.html"))
 		if err != nil {
-			http.Error(w, "Unable to write response", http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -81,10 +81,11 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 func AddUserToSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sessionID := r.PathValue("sessionID")
+		log.Printf("Adding user to session: %s\n", sessionID)
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
-			log.Println(err)
+			log.Printf("Error getting user from cookie: %v\n", err)
 			http.Error(w, "Unable to get user from cookie", http.StatusInternalServerError)
 			return
 		}
