@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/vpreseault/hack-the-hill-2/backend/cookies"
 	"github.com/vpreseault/hack-the-hill-2/backend/database"
 )
 
@@ -55,9 +56,16 @@ func GetSessionInfo(db *database.DB) http.HandlerFunc {
 
 func CreateSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionID, err := db.CreateSession("test")
+		hostName, err := cookies.GetHostNameFromUserCookie(r)
+		if err != nil {
+			http.Error(w, "Unable to get host name from cookie", http.StatusInternalServerError)
+			return
+		}
+
+		sessionID, err := db.CreateSession(hostName)
 		if err != nil {
 			http.Error(w, "Unable to create session", http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
