@@ -23,7 +23,12 @@ func CreateDB(path string) (*DB, error) {
         return nil, fmt.Errorf("error creating database: %v", err)
     }
     defer file.Close()
-    return db, nil
+
+	err = db.write(DBModel{
+		Sessions: make(map[SessionID]SessionInfo),
+	})
+
+    return db, err
 }
 
 func (db *DB) write(dbModel DBModel) error {
