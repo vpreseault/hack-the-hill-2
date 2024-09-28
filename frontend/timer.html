@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotating Circle</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #3498db;
+            position: absolute;
+            transform-origin: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="circle"></div>
+</body>
+<script>
+    const element = document.getElementsByClassName('circle')[0]
+    document.body.appendChild(element)
+
+    let moved = false
+    const downListener = () => {
+    moved = false
+    }
+    const moveListener = () => {
+    moved = true
+    }
+    const upListener = () => {
+    if (moved) {
+        console.log('moved')
+    } else {
+        console.log('not moved')
+    }
+    }
+
+    // Attach listeners
+    element.addEventListener('mousedown', downListener)
+    element.addEventListener('mousemove', moveListener)
+    element.addEventListener('mouseup', upListener)
+
+    // Release memory
+    element.removeEventListener('mousedown', downListener)
+    element.removeEventListener('mousemove', moveListener)
+    element.removeEventListener('mouseup', upListener)
+</script>
+</html>
