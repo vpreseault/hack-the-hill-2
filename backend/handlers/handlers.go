@@ -3,6 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/vpreseault/hack-the-hill-2/backend/database"
 )
 
 func Root() http.HandlerFunc {
@@ -23,7 +25,7 @@ func Root() http.HandlerFunc {
 	}
 }
 
-func Session() http.HandlerFunc {
+func GetSessionInfo(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sessionIDPathValue := r.PathValue("sessionId")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

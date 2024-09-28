@@ -11,15 +11,15 @@ import (
 func main() {
 	const port = "8080"
 
-	_, err := database.CreateDB("database.json")
+	db, err := database.CreateDB("database.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.Root())
-	mux.HandleFunc("/{sessionId}", handlers.Session())
-
+	mux.HandleFunc("GET /{sessionId}", handlers.GetSessionInfo(db))
+	
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
