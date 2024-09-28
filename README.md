@@ -2,7 +2,7 @@
 
 # Brainstorm
 - [ ] Multiplayer pomodoro
-- [ ] VSCode extension, farming gamification of programming
-- [ ] life tracker, find patterns in health and sleep
-- [ ] "Forest" clone, or some other timed accomplishment app
-- [ ] multiplayer todo list, send links to friends to collaborate on lists
+- [x] VSCode extension, farming gamification of programming
+- [x] life tracker, find patterns in health and sleep
+- [x] "Forest" clone, or some other timed accomplishment app
+- [x] multiplayer todo list, send links to friends to collaborate on lists
