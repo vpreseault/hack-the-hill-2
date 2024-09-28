@@ -38,19 +38,35 @@ func GetSessionInfo(db *database.DB) http.HandlerFunc {
 
 func CreateSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionIDCookie, err := r.Cookie("sessionID")
-		if err == nil {
-			// user already has a session, delete cookie and redirect to session page
-			sessionIDCookie.MaxAge = -1
-			http.SetCookie(w, sessionIDCookie)
-			
-			http.Redirect(w, r, "/"+sessionIDCookie.Value, http.StatusSeeOther)
-			return
-		}
+        err := r.ParseForm()
+        if err != nil {
+            http.Error(w, "Unable to parse form data", http.StatusBadRequest)
+            return
+        }
 
-		hostName, err := cookies.GetUserNameFromCookie(r)
-		if err != nil {
-			http.Error(w, "Unable to get host name from cookie", http.StatusInternalServerError)
+        hostName := r.FormValue("username")
+        
+        if hostName == "" {
+            http.Error(w, "Username is required", http.StatusBadRequest)
+            return
+        }
+
+		cookie := &http.Cookie{
+			Name:  "user",
+			Value: hostName,
+			Path:     "/",
+		}
+		http.SetCookie(w, cookie)
+
+		sessionIDCookie, err := r.Cookie("sessionID")
+		if err == nil && sessionIDCookie.Value != "" {
+			sessionID := sessionIDCookie.Value
+			// user already has a session, delete cookie and redirect to session page
+			sessionIDCookie.Value = ""
+			http.SetCookie(w, sessionIDCookie)
+
+			w.Header().Set("HX-Redirect", "/"+sessionID)
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 
@@ -60,7 +76,8 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, "/"+sessionID, http.StatusSeeOther)
+		w.Header().Set("HX-Redirect", "/"+sessionID)
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
