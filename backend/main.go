@@ -17,10 +17,18 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+
+	// General
 	mux.HandleFunc("/", handlers.Root())
+
+	// Session
 	mux.HandleFunc("GET /{sessionID}", handlers.AddUserToSession(db))
 	mux.HandleFunc("GET /api/sessions/{sessionID}", handlers.GetSessionInfo(db))
 	mux.HandleFunc("POST /api/sessions", handlers.CreateSession(db))
+
+	// Timer
+	mux.HandleFunc("POST /api/sessions/{sessionID}/timer/start", handlers.StartTimer(db))
+	mux.HandleFunc("POST /api/sessions/{sessionID}/timer/stop", handlers.StopTimer(db))
 
 	srv := &http.Server{
 		Addr:    ":" + port,
