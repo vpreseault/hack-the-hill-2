@@ -39,3 +39,25 @@ func (db *DB) CreateSession(hostName string) (string, error) {
 
 	return string(sessionID), nil
 }
+
+func (db *DB) AddUserToSession(sessionID SessionID, userName string) error {
+	dbModel, err := db.load()
+	if err != nil {
+		return err
+	}
+
+	sessionInfo, exists := dbModel.Sessions[sessionID]
+	if !exists {
+		return errors.New("session not found")
+	}	
+
+	sessionInfo.Users = append(sessionInfo.Users, userName)
+	dbModel.Sessions[sessionID] = sessionInfo
+
+	err = db.write(dbModel)
+	if err != nil {
+		return err
+	}	
+
+	return nil
+}
