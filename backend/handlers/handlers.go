@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
-	"path/filepath"
 
 	"github.com/vpreseault/hack-the-hill-2/backend/cookies"
 	"github.com/vpreseault/hack-the-hill-2/backend/database"
@@ -12,17 +10,7 @@ import (
 
 func Root() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.ParseFiles(filepath.Join("..", "frontend", "index.html"))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		renderTemplate(w, "index")
 	}
 }
 
@@ -93,16 +81,6 @@ func AddUserToSession(db *database.DB) http.HandlerFunc {
 			return
 		}	
 
-		tmpl, err := template.ParseFiles(filepath.Join("..", "frontend", "timer.html"))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		renderTemplate(w, "timer")
 	}
 }
