@@ -52,3 +52,19 @@ func GetSessionInfo(db *database.DB) http.HandlerFunc {
 		}
 	}
 }
+
+func CreateSession(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sessionID, err := db.CreateSession("test")
+		if err != nil {
+			http.Error(w, "Unable to create session", http.StatusInternalServerError)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write([]byte(sessionID))
+		if err != nil {
+			http.Error(w, "Unable to write response", http.StatusInternalServerError)
+		}
+	}
+}

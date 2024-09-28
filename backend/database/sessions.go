@@ -1,6 +1,8 @@
 package database
 
-import "errors"
+import (
+	"errors"
+)
 
 func (db *DB) GetSessionInfo(sessionId SessionID) (SessionInfo, error) {
 	session := SessionInfo{}
@@ -16,4 +18,24 @@ func (db *DB) GetSessionInfo(sessionId SessionID) (SessionInfo, error) {
 	}
 
 	return session, nil
+}
+
+func (db *DB) CreateSession(hostName string) (string, error) {
+	dbModel, err := db.load()
+	if err != nil {
+		return "", err
+	}
+	
+	sessionID := SessionID(generateID())
+	dbModel.Sessions[sessionID] = SessionInfo{
+		Users: []string{hostName},
+		Timer: Timer{},
+	}
+
+	err = db.write(dbModel)
+	if err != nil {
+		return "", err
+	}
+
+	return string(sessionID), nil
 }

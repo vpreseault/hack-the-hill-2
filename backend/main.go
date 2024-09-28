@@ -19,7 +19,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.Root())
 	mux.HandleFunc("GET /{sessionId}", handlers.GetSessionInfo(db))
-	
+	mux.HandleFunc("POST /api/sessions", handlers.CreateSession(db))
+
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
