@@ -25,7 +25,7 @@ func CreateDB(path string) (*DB, error) {
     defer file.Close()
 
 	err = db.write(DBModel{
-		Sessions: make(map[SessionID]SessionInfo),
+		Sessions: make(map[string]SessionInfo),
 	})
 
     return db, err

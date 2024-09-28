@@ -29,8 +29,8 @@ func Root() http.HandlerFunc {
 
 func GetSessionInfo(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionIDPathValue := database.SessionID(r.PathValue("sessionId"))
-		session, err := db.GetSessionInfo(sessionIDPathValue)
+		sessionID := r.PathValue("sessionID")
+		session, err := db.GetSessionInfo(sessionID)
 		if err != nil {
 			http.Error(w, "Unable to get session info", http.StatusInternalServerError)
 		}
@@ -46,7 +46,7 @@ func GetSessionInfo(db *database.DB) http.HandlerFunc {
 		</html>
 		`
 
-		response := fmt.Sprintf(template, sessionIDPathValue, session.Users, session.Timer)
+		response := fmt.Sprintf(template, sessionID, session.Users, session.Timer)
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte(response))
 		if err != nil {
@@ -80,7 +80,7 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 
 func AddUserToSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionIDPathValue := database.SessionID(r.PathValue("sessionId"))
+		sessionID := r.PathValue("sessionID")
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
@@ -89,7 +89,7 @@ func AddUserToSession(db *database.DB) http.HandlerFunc {
 			return
 		}
 		
-		err = db.AddUserToSession(sessionIDPathValue, user)
+		err = db.AddUserToSession(sessionID, user)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "Unable to add user to session", http.StatusInternalServerError)

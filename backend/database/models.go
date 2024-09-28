@@ -11,8 +11,6 @@ type Timer struct {
 	Type              string `json:"type"`
 }
 
-type SessionID string
-
 type DBModel struct {
-	Sessions map[SessionID]SessionInfo `json:"sessions"`
+	Sessions map[string]SessionInfo `json:"sessions"`
 }

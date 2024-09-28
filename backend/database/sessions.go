@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-func (db *DB) GetSessionInfo(sessionId SessionID) (SessionInfo, error) {
+func (db *DB) GetSessionInfo(sessionID string) (SessionInfo, error) {
 	session := SessionInfo{}
 
 	dbModel, err := db.load()
@@ -12,7 +12,7 @@ func (db *DB) GetSessionInfo(sessionId SessionID) (SessionInfo, error) {
 		return session, err
 	}
 
-	session, exists := dbModel.Sessions[sessionId]
+	session, exists := dbModel.Sessions[sessionID]
 	if !exists {
 		return session, errors.New("session not found")
 	}
@@ -26,7 +26,7 @@ func (db *DB) CreateSession(hostName string) (string, error) {
 		return "", err
 	}
 	
-	sessionID := SessionID(generateID())
+	sessionID := generateID()
 	dbModel.Sessions[sessionID] = SessionInfo{
 		Users: []string{hostName},
 		Timer: Timer{},
@@ -37,10 +37,10 @@ func (db *DB) CreateSession(hostName string) (string, error) {
 		return "", err
 	}
 
-	return string(sessionID), nil
+	return sessionID, nil
 }
 
-func (db *DB) AddUserToSession(sessionID SessionID, userName string) error {
+func (db *DB) AddUserToSession(sessionID string, userName string) error {
 	dbModel, err := db.load()
 	if err != nil {
 		return err
