@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/vpreseault/hack-the-hill-2/backend/cookies"
@@ -11,19 +10,7 @@ import (
 
 func Root() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		response := `
-		<html>
-		<body>
-			<h1>Hello World</h1>
-		</body>
-		</html>
-		`
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(response))
-		if err != nil {
-			http.Error(w, "Unable to write response", http.StatusInternalServerError)
-		}
+		renderTemplate(w, "index")
 	}
 }
 
@@ -84,18 +71,16 @@ func AddUserToSession(db *database.DB) http.HandlerFunc {
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "Unable to get user from cookie", http.StatusInternalServerError)
 			return
 		}
 		
 		err = db.AddUserToSession(sessionID, user)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "Unable to add user to session", http.StatusInternalServerError)
 			return
 		}	
 
-		w.WriteHeader(http.StatusOK)
+		renderTemplate(w, "timer")
 	}
 }
