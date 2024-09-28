@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -23,4 +24,21 @@ func CreateDB(path string) (*DB, error) {
     }
     defer file.Close()
     return db, nil
+}
+
+func (db *DB) write(dbModel DBModel) error {
+	db.mux.Lock()
+	defer db.mux.Unlock()
+
+	data, err := json.Marshal(dbModel)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(db.path, data, 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
