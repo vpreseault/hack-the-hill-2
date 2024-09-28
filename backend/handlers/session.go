@@ -38,6 +38,16 @@ func GetSessionInfo(db *database.DB) http.HandlerFunc {
 
 func CreateSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		sessionIDCookie, err := r.Cookie("sessionID")
+		if err == nil {
+			// user already has a session, delete cookie and redirect to session page
+			sessionIDCookie.MaxAge = -1
+			http.SetCookie(w, sessionIDCookie)
+			
+			http.Redirect(w, r, "/"+sessionIDCookie.Value, http.StatusSeeOther)
+			return
+		}
+
 		hostName, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
 			http.Error(w, "Unable to get host name from cookie", http.StatusInternalServerError)
@@ -50,12 +60,7 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(sessionID))
-		if err != nil {
-			http.Error(w, "Unable to write response", http.StatusInternalServerError)
-		}
+		http.Redirect(w, r, "/"+sessionID, http.StatusSeeOther)
 	}
 }
 
@@ -65,7 +70,9 @@ func AddUserToSession(db *database.DB) http.HandlerFunc {
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
-			http.Error(w, "Unable to get user from cookie", http.StatusInternalServerError)
+			// no user name, redirect to root
+			saveSessionIDInCookie(w, sessionID)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
 

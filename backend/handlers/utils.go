@@ -19,3 +19,11 @@ func renderTemplate(w http.ResponseWriter, fileName string) error {
 
 	return nil
 }
+
+func saveSessionIDInCookie(w http.ResponseWriter, sessionID string) {
+	cookie := &http.Cookie{
+		Name:  "sessionID",
+		Value: sessionID,
+	}
+	http.SetCookie(w, cookie)
+}
