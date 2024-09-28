@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/vpreseault/hack-the-hill-2/backend/cookies"
@@ -66,18 +65,16 @@ func AddUserToSession(db *database.DB) http.HandlerFunc {
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "Unable to get user from cookie", http.StatusInternalServerError)
 			return
 		}
 
 		err = db.AddUserToSession(sessionID, user)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "Unable to add user to session", http.StatusInternalServerError)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		renderTemplate(w, "timer")
 	}
 }

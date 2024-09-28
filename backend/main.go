@@ -19,6 +19,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// General
+	mux.Handle("GET /favicon.ico", http.FileServer(http.Dir("../frontend/public")))
 	mux.HandleFunc("/", handlers.Root())
 
 	// Session
