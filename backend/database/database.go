@@ -47,3 +47,27 @@ func (db *DB) write(dbModel DBModel) error {
 
 	return nil
 }
+
+func (db *DB) load() (DBModel, error) {
+	db.mux.RLock()
+	defer db.mux.RUnlock()
+
+	dbModel := DBModel{}
+
+	file, err := os.Open(db.path)
+    if err != nil {
+        fmt.Println("Error opening DB file:", err)
+        return dbModel, err
+    }
+    defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&dbModel)
+	if err != nil {
+        fmt.Println("Error decoding DB file:", err)
+        return dbModel, err
+    }
+
+	return dbModel, nil
+
+}
