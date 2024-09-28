@@ -29,7 +29,7 @@ func Root() http.HandlerFunc {
 
 func GetSessionInfo(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionID := r.PathValue("sessionId")
+		sessionID := r.PathValue("sessionID")
 		session, err := db.GetSessionInfo(sessionID)
 		if err != nil {
 			http.Error(w, "Unable to get session info", http.StatusInternalServerError)
@@ -80,7 +80,7 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 
 func AddUserToSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionID := r.PathValue("sessionId")
+		sessionID := r.PathValue("sessionID")
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {

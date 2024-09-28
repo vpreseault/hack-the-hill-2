@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-func (db *DB) GetSessionInfo(sessionId string) (SessionInfo, error) {
+func (db *DB) GetSessionInfo(sessionID string) (SessionInfo, error) {
 	session := SessionInfo{}
 
 	dbModel, err := db.load()
@@ -12,7 +12,7 @@ func (db *DB) GetSessionInfo(sessionId string) (SessionInfo, error) {
 		return session, err
 	}
 
-	session, exists := dbModel.Sessions[sessionId]
+	session, exists := dbModel.Sessions[sessionID]
 	if !exists {
 		return session, errors.New("session not found")
 	}
