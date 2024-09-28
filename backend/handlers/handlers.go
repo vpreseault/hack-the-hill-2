@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 
@@ -81,22 +80,29 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 func AddUserToSession(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sessionID := r.PathValue("sessionID")
-		log.Printf("Adding user to session: %s\n", sessionID)
 
 		user, err := cookies.GetUserNameFromCookie(r)
 		if err != nil {
-			log.Printf("Error getting user from cookie: %v\n", err)
 			http.Error(w, "Unable to get user from cookie", http.StatusInternalServerError)
 			return
 		}
 		
 		err = db.AddUserToSession(sessionID, user)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "Unable to add user to session", http.StatusInternalServerError)
 			return
 		}	
 
-		w.WriteHeader(http.StatusOK)
+		tmpl, err := template.ParseFiles(filepath.Join("..", "frontend", "timer.html"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
