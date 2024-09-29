@@ -7,7 +7,7 @@ import (
 )
 
 func renderTemplate(w http.ResponseWriter, fileName string) error {
-	tmpl, err := template.ParseFiles(filepath.Join("..", "frontend", "static", fileName + ".html"))
+	tmpl, err := template.ParseFiles(filepath.Join("..", "static", fileName + ".html"))
 	if err != nil {
 		return err
 	}
