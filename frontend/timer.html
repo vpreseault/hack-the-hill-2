@@ -143,9 +143,9 @@
 					></circle>
 					<defs>
 						<linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-							<stop offset="0%" style="stop-color: red" />
-							<stop offset="50%" style="stop-color: orange" />
-							<stop offset="100%" style="stop-color: rgb(29, 209, 94)" />
+							<stop offset="0%" style="stop-color: #F40752" />
+							<stop offset="50%" style="stop-color: #F75971" />
+							<stop offset="100%" style="stop-color: #F9AB8F" />
 						</linearGradient>
 					</defs>
 				</svg>
@@ -162,6 +162,8 @@
 			let rotationAngle = 0;
 
 			var intervalId;
+
+			var tick = new Audio("tick.wav");
 
 			document.addEventListener("mousedown", (e) => {
 				if (e.target.closest(".knob")) {
@@ -185,6 +187,7 @@
 
 					if (rotationAngle <= 270) {
 						pointer.style.transform = `rotate(${rotationAngle - 45}deg)`;
+						tick.play();
 
 						let progressPercent = rotationAngle / 270;
 
@@ -209,10 +212,17 @@
 			document.addEventListener("mousemove", rotateKnob);
 
 			function startTimer(duration, display) {
-				var start = Date.now(),
-						diff,
-						minutes,
-						seconds;
+				var start = Date.now(), diff, minutes, seconds;
+				var timerRequest = new XMLHttpRequest();
+
+				timerRequest.open("POST", "/api/timer/start", true);
+				timerRequest.setRequestHeader("Content-Type", "application/json");
+				timerRequest.send(JSON.stringify({
+					start_time: String(start),
+					duration_in_seconds: String(duration),
+					type: "study"
+				}));
+
 				function timer() {
 					diff = duration - (((Date.now() - start) / 1000) | 0);
 
@@ -235,15 +245,6 @@
 				timer();
 				intervalId = setInterval(timer, 1000);
 			}
-
-			// document.addEventListener("mouseup", () => {
-			// 	isRotating = false;
-
-			// 	let rotationAmount = rotationAngle / 270;
-			// 	let timerDuration = Math.round(rotationAmount * 3600);
-				
-			// 	startTimer(timerDuration, text);
-			// });
 		</script>
 	</body>
 </html>
