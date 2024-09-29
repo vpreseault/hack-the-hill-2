@@ -7,7 +7,7 @@ type SessionInfo struct {
 
 type Timer struct {
 	StartTime         string `json:"start_time"`
-	DurationInMinutes int64  `json:"duration_in_minutes"`
+	DurationInSeconds int64  `json:"duration_in_seconds"`
 	Type              string `json:"type"`
 }
 

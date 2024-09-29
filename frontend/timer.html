@@ -163,7 +163,7 @@
 
 			var intervalId;
 
-			var tick = new Audio("tick.wav");
+			var tick = new Audio("/static/tick.wav");
 
 			document.addEventListener("mousedown", (e) => {
 				if (e.target.closest(".knob")) {
@@ -202,7 +202,7 @@
 							isRotating = false;
 							if (e.target.closest(".knob")) {
 								clearInterval(intervalId);
-								startTimer(progressPercent*36, text);
+								startTimer(progressPercent * 36, text);
 							}
 						});
 					}
@@ -212,9 +212,9 @@
 			document.addEventListener("mousemove", rotateKnob);
 
 			function startTimer(duration, display) {
+				clearInterval(intervalId);
 				var start = Date.now(), diff, minutes, seconds;
 				var timerRequest = new XMLHttpRequest();
-
 				timerRequest.open("POST", "/api/timer/start", true);
 				timerRequest.setRequestHeader("Content-Type", "application/json");
 				timerRequest.send(JSON.stringify({
@@ -242,6 +242,7 @@
 						clearInterval(intervalId);
 					}
 				};
+
 				timer();
 				intervalId = setInterval(timer, 1000);
 			}
