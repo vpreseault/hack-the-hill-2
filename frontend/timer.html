@@ -165,6 +165,25 @@
 
 			var tick = new Audio("/static/tick.wav");
 
+			const socket = new WebSocket("ws://localhost:8081/ws");
+
+			socket.onmessage = function(e) {
+				const data = JSON.parse(e.data);
+				if (data.type == "timer_update") {
+					updateTimerDisplay(data.time);
+				}
+			}
+
+			function updateTimerDisplay(time) {
+				let minutes = String(Math.floor(time / 60)).padStart(2, "0");
+				let seconds = String(time % 60).padStart(2, "0");
+				text.innerHTML = `${minutes}:${seconds}`;
+
+				tickdown = time / 3600 * 270;
+				pointer.style.transform = `rotate(${tickdown - 45}deg)`;
+				circle.style.strokeDashoffset = `${880 - 660 * tickdown / 270}`;
+			}
+
 			document.addEventListener("mousedown", (e) => {
 				if (e.target.closest(".knob")) {
 					clearInterval(intervalId);
@@ -211,40 +230,56 @@
 
 			document.addEventListener("mousemove", rotateKnob);
 
-			function startTimer(duration, display) {
-				clearInterval(intervalId);
-				var start = Date.now(), diff, minutes, seconds;
-				var timerRequest = new XMLHttpRequest();
-				timerRequest.open("POST", "/api/timer/start", true);
-				timerRequest.setRequestHeader("Content-Type", "application/json");
-				timerRequest.send(JSON.stringify({
-					start_time: String(start),
-					duration_in_seconds: String(duration),
-					type: "study"
+			function startTimer(duration) {
+				socket.send(JSON.stringify({
+					type: "start_timer",
+					duration: duration
 				}));
+			}
 
-				function timer() {
-					diff = duration - (((Date.now() - start) / 1000) | 0);
+			// function startTimer(duration, display) {
+			// 	clearInterval(intervalId);
+			// 	var start = Date.now(), diff, minutes, seconds;
+			// 	var timerRequest = new XMLHttpRequest();
+			// 	timerRequest.open("POST", "/api/timer/start", true);
+			// 	timerRequest.setRequestHeader("Content-Type", "application/json");
+			// 	timerRequest.send(JSON.stringify({
+			// 		start_time: String(start),
+			// 		duration_in_seconds: String(duration),
+			// 		type: "study"
+			// 	}));
 
-					minutes = (diff / 60) | 0;
-					seconds = (diff % 60) | 0;
+			// 	function timer() {
+			// 		diff = duration - (((Date.now() - start) / 1000) | 0);
 
-					minutes = minutes < 10 ? "0" + minutes : minutes;
-					seconds = seconds < 10 ? "0" + seconds : seconds;
+			// 		minutes = (diff / 60) | 0;
+			// 		seconds = (diff % 60) | 0;
 
-					display.textContent = minutes + ":" + seconds;
+			// 		minutes = minutes < 10 ? "0" + minutes : minutes;
+			// 		seconds = seconds < 10 ? "0" + seconds : seconds;
 
-					tickdown = diff/3600*270;
-					pointer.style.transform = `rotate(${tickdown-45}deg)`;
-					circle.style.strokeDashoffset = `${880 - 660 * tickdown/270}`;
+			// 		display.textContent = minutes + ":" + seconds;
 
-					if (diff <= 0) {
-						clearInterval(intervalId);
-					}
-				};
+			// 		tickdown = diff/3600*270;
+			// 		pointer.style.transform = `rotate(${tickdown-45}deg)`;
+			// 		circle.style.strokeDashoffset = `${880 - 660 * tickdown/270}`;
 
-				timer();
-				intervalId = setInterval(timer, 1000);
+			// 		if (diff <= 0) {
+			// 			clearInterval(intervalId);
+			// 			changeMode();
+			// 		}
+			// 	};
+
+			// 	timer();
+			// 	intervalId = setInterval(timer, 1000);
+			// }
+
+			function changeMode() {
+				if (document.querySelector(".title").textContent == "study") {
+					document.querySelector(".title").textContent = "break";
+				} else {
+					document.querySelector(".title").textContent = "study";
+				}
 			}
 		</script>
 	</body>
