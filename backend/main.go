@@ -19,7 +19,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// General
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/static"))))
 	mux.HandleFunc("/", handlers.Root())
 
 	// Session
