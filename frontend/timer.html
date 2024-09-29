@@ -185,24 +185,109 @@
 
 			var tick = new Audio("/static/tick.wav");
 
-			const socket = new WebSocket("ws://localhost:8081/ws");
+			let timerInterval;
+			let timerState = {
+				duration: 0,
+				startTime: null,
+				isRunning: false
+			};
 
-			socket.onmessage = function(e) {
-				const data = JSON.parse(e.data);
-				if (data.type == "timer_update") {
-					updateTimerDisplay(data.time);
+			const socket = new WebSocket("ws://" + window.location.host + "/ws");
+
+			socket.onmessage = function(event) {
+				const data = JSON.parse(event.data);
+				if (data.type === 'timer_update') {
+					timerState = data.timerState;
+					updateTimerDisplay();
+					if (timerState.isRunning) {
+						startLocalTimer();
+					} else {
+						stopLocalTimer();
+					}
+				}
+			};
+
+			function startTimer(duration) {
+				socket.send(JSON.stringify({
+					type: 'start',
+					duration: duration
+				}));
+			}
+
+			function pauseTimer() {
+				const remainingTime = calculateRemainingTime();
+				socket.send(JSON.stringify({
+					type: 'pause',
+					duration: remainingTime
+				}));
+			}
+
+			function stopTimer() {
+				socket.send(JSON.stringify({
+					type: 'stop'
+				}));
+			}
+
+			function startLocalTimer() {
+				stopLocalTimer(); // Clear any existing interval
+				timerInterval = setInterval(updateTimerDisplay, 1000);
+			}
+
+			function stopLocalTimer() {
+				clearInterval(timerInterval);
+			}
+
+			function calculateRemainingTime() {
+				if (!timerState.isRunning) return timerState.duration;
+				const elapsed = Math.floor((Date.now() - new Date(timerState.startTime).getTime()) / 1000);
+				return Math.max(0, timerState.duration - elapsed);
+			}
+
+			function updateTimerDisplay() {
+				const remainingTime = calculateRemainingTime();
+
+				const minutes = String(Math.floor(remainingTime / 60)).padStart(2, "0");
+				const seconds = String(remainingTime % 60).padStart(2, "0");
+				document.querySelector(".text").textContent = `${minutes}:${seconds}`;
+
+				tickdown = remainingTime / 3600 * 270;
+				pointer.style.transform = `rotate(${tickdown - 45}deg)`;
+				circle.style.strokeDashoffset = `${880 - 660 * tickdown / 270}`;
+
+				if (remainingTime === 0 && timerState.isRunning) {
+					stopTimer(); // Timer completed
+					changeMode();
 				}
 			}
 
-			function updateTimerDisplay(time) {
-				let minutes = String(Math.floor(time / 60)).padStart(2, "0");
-				let seconds = String(time % 60).padStart(2, "0");
-				text.innerHTML = `${minutes}:${seconds}`;
+			// function updateTimerDisplay(time) {
+			// 	var start = Date.now(), diff, minutes, seconds;
+			// 	var duration = time;
 
-				tickdown = time / 3600 * 270;
-				pointer.style.transform = `rotate(${tickdown - 45}deg)`;
-				circle.style.strokeDashoffset = `${880 - 660 * tickdown / 270}`;
-			}
+			// 	function timer() {
+			// 		diff = duration - (((Date.now() - start) / 1000) | 0);
+
+			// 		minutes = (diff / 60) | 0;
+			// 		seconds = (diff % 60) | 0;
+
+			// 		minutes = minutes < 10 ? "0" + minutes : minutes;
+			// 		seconds = seconds < 10 ? "0" + seconds : seconds;
+
+			// 		display.textContent = minutes + ":" + seconds;
+
+			// 		tickdown = diff/3600*270;
+			// 		pointer.style.transform = `rotate(${tickdown-45}deg)`;
+			// 		circle.style.strokeDashoffset = `${880 - 660 * tickdown/270}`;
+
+			// 		if (diff <= 0) {
+			// 			clearInterval(intervalId);
+			// 			changeMode();
+			// 		}
+			// 	};
+
+			// 	timer();
+			// 	intervalId = setInterval(timer, 1000);
+			// }
 
 			document.addEventListener("mousedown", (e) => {
 				if (e.target.closest(".knob")) {
@@ -250,12 +335,12 @@
 
 			document.addEventListener("mousemove", rotateKnob);
 
-			function startTimer(duration) {
-				socket.send(JSON.stringify({
-					type: "start_timer",
-					duration: duration
-				}));
-			}
+			// function startTimer(duration) {
+			// 	socket.send(JSON.stringify({
+			// 		type: "start_timer",
+			// 		duration: duration
+			// 	}));
+			// }
 
 			// function startTimer(duration, display) {
 			// 	clearInterval(intervalId);
@@ -302,13 +387,7 @@
 				}
 			}
 
-			function changeMode() {
-				if (document.querySelector(".title").textContent == "study") {
-					document.querySelector(".title").textContent = "break";
-				} else {
-					document.querySelector(".title").textContent = "study";
-				}
-			}
+			updateTimerDisplay();
 		</script>
 	</body>
 </html>
