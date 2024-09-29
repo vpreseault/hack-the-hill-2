@@ -24,6 +24,7 @@ func saveSessionIDInCookie(w http.ResponseWriter, sessionID string) {
 	cookie := &http.Cookie{
 		Name:  "sessionID",
 		Value: sessionID,
+		Path: "/",
 	}
 	http.SetCookie(w, cookie)
 }
