@@ -86,6 +86,17 @@ func (h *Hub) startTimer(duration int64) {
     h.broadcast <- message
 }
 
+func (h *Hub) sendTimerState(client *Client) {
+    h.mutex.Lock()
+    defer h.mutex.Unlock()
+
+    message, _ := json.Marshal(map[string]interface{}{
+        "type":       "timer_update",
+        "timerState": h.timerState,
+    })
+    client.send <- message
+}
+
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
     conn, err := upgrader.Upgrade(w, r, nil)
@@ -95,6 +106,8 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
     }
     client := &Client{conn: conn, send: make(chan []byte, 256)}
     hub.register <- client
+
+	hub.sendTimerState(client)
 
     go client.writePump(hub)
     go client.readPump(hub)
@@ -114,7 +127,8 @@ func (h *Hub) handleTimerEvent(eventType string, duration int64) {
         }
     case "pause":
         h.timerState.IsRunning = false
-        h.timerState.Duration = duration // Update remaining duration
+        h.timerState.Duration = duration
+        h.timerState.StartTime = time.Now()
     case "stop":
         h.timerState = TimerState{} // Reset timer state
     }
