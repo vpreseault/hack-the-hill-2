@@ -192,7 +192,7 @@
 				isRunning: false
 			};
 
-			const socket = new WebSocket("ws://" + window.location.host.replace("8080", "8081") + "/ws");
+			const socket = new WebSocket(`wss://${window.location.host}/ws`);
 
 			socket.onmessage = function(event) {
 				const data = JSON.parse(event.data);

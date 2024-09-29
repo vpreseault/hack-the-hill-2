@@ -54,9 +54,10 @@ func main() {
     }()
 
     // Start the WebSocket server
-    err = http.ListenAndServe(":8081", wsRouter)
-    if err != nil {
-        log.Fatal("WebSocket ListenAndServe: ", err)
-    }
+	websocketServer := &http.Server{
+		Addr:    "0.0.0.0:8081",
+		Handler: wsRouter,
+	}
 
+	log.Fatal(websocketServer.ListenAndServe())
 }
