@@ -24,7 +24,7 @@ func main() {
 	mux.HandleFunc("/", handlers.Root())
 
 	// Session
-	mux.HandleFunc("GET /{sessionID}", handlers.AddUserToSession(db))
+	mux.HandleFunc("GET /sessions/{sessionID}", handlers.AddUserToSession(db))
 	mux.HandleFunc("GET /api/sessions/{sessionID}", handlers.GetSessionInfo(db))
 	mux.HandleFunc("POST /api/sessions", handlers.CreateSession(db))
 
@@ -37,6 +37,5 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Printf("Backend server running on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
 }

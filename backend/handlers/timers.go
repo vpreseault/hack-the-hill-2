@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/vpreseault/hack-the-hill-2/backend/database"
@@ -19,7 +18,6 @@ func StartTimer(db *database.DB) http.HandlerFunc {
 		}
 		
 		sessionID := r.PathValue("sessionID")
-		log.Printf("Starting timer for session: %s", sessionID)
 
 		err = db.StartTimer(sessionID, timer)
 		if err != nil {

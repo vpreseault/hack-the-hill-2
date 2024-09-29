@@ -65,7 +65,7 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 			sessionIDCookie.Value = ""
 			http.SetCookie(w, sessionIDCookie)
 
-			w.Header().Set("HX-Redirect", "/"+sessionID)
+			w.Header().Set("HX-Redirect", "/sessions/"+sessionID)
 			w.WriteHeader(http.StatusOK)
 			return
 		}
@@ -76,7 +76,7 @@ func CreateSession(db *database.DB) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("HX-Redirect", "/"+sessionID)
+		w.Header().Set("HX-Redirect", "/sessions/"+sessionID)
 		w.WriteHeader(http.StatusOK)
 	}
 }
