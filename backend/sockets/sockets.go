@@ -24,6 +24,7 @@ type Client struct {
 type TimerState struct {
     Duration  int64     `json:"duration"`
     StartTime time.Time `json:"startTime"`
+    IsRunning bool      `json:"isRunning"`
 }
 
 type Hub struct {
@@ -68,6 +69,7 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) startTimer(duration int64) {
+	log.Printf("startTimer duration %v", duration)
     h.mutex.Lock()
     defer h.mutex.Unlock()
 
@@ -78,13 +80,14 @@ func (h *Hub) startTimer(duration int64) {
 
     message, _ := json.Marshal(map[string]interface{}{
         "type":      "timer_update",
-        "duration":  duration,
+        "time":  duration,
         "startTime": h.timerState.StartTime,
     })
     h.broadcast <- message
 }
 
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println(err)
@@ -97,7 +100,34 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
     go client.readPump(hub)
 }
 
+
+func (h *Hub) handleTimerEvent(eventType string, duration int64) {
+    h.mutex.Lock()
+    defer h.mutex.Unlock()
+
+    switch eventType {
+    case "start":
+        h.timerState = TimerState{
+            Duration:  duration,
+            StartTime: time.Now(),
+            IsRunning: true,
+        }
+    case "pause":
+        h.timerState.IsRunning = false
+        h.timerState.Duration = duration // Update remaining duration
+    case "stop":
+        h.timerState = TimerState{} // Reset timer state
+    }
+
+    message, _ := json.Marshal(map[string]interface{}{
+        "type":       "timer_update",
+        "timerState": h.timerState,
+    })
+    h.broadcast <- message
+}
+
 func (c *Client) readPump(hub *Hub) {
+	log.Println("readPump")
     defer func() {
         hub.unregister <- c
         c.conn.Close()
@@ -105,6 +135,7 @@ func (c *Client) readPump(hub *Hub) {
 
     for {
         _, message, err := c.conn.ReadMessage()
+		log.Printf("readPump message %v, error %v", message, err)
         if err != nil {
             if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
                 log.Printf("error: %v", err)
@@ -118,14 +149,15 @@ func (c *Client) readPump(hub *Hub) {
             continue
         }
 
-        if data["type"] == "start_timer" {
-            duration := int64(data["duration"].(float64))
-            hub.startTimer(duration)
-        }
+        if eventType, ok := data["type"].(string); ok {
+			duration := int64(data["duration"].(float64))
+			hub.handleTimerEvent(eventType, duration)
+		}
     }
 }
 
 func (c *Client) writePump(hub *Hub) {
+	log.Println("writePump")
     defer func() {
         c.conn.Close()
     }()
@@ -133,6 +165,7 @@ func (c *Client) writePump(hub *Hub) {
     for {
         select {
         case message, ok := <-c.send:
+			log.Printf("writePump message %v, ok %v", message, ok)
             if !ok {
                 c.conn.WriteMessage(websocket.CloseMessage, []byte{})
                 return

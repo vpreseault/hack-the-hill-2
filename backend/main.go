@@ -45,16 +45,14 @@ func main() {
     // Create a new router for the WebSocket server
     wsRouter := mux.NewRouter()
     wsRouter.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("WebSocket connection established")
         sockets.ServeWs(hub, w, r)
     })
 
     // Start the main API server
     go func() {
         log.Println("API server starting on :8080")
-        err := http.ListenAndServe(":8080", apiRouter)
-        if err != nil {
-            log.Fatal("API ListenAndServe: ", err)
-        }
+		log.Fatal(srv.ListenAndServe())
     }()
 
     // Start the WebSocket server
@@ -64,5 +62,4 @@ func main() {
         log.Fatal("WebSocket ListenAndServe: ", err)
     }
 
-	log.Fatal(srv.ListenAndServe())
 }
