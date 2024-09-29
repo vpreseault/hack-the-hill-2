@@ -33,7 +33,7 @@ func main() {
 	mux.HandleFunc("POST /api/sessions/{sessionID}/timer/stop", handlers.StopTimer(db))
 
 	srv := &http.Server{
-		Addr:    ":" + port,
+		Addr:    "0.0.0.0:" + port,
 		Handler: mux,
 	}
 
