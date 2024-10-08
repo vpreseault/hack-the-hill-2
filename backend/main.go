@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/vpreseault/hack-the-hill-2/backend/database"
 	"github.com/vpreseault/hack-the-hill-2/backend/handlers"
 	"github.com/vpreseault/hack-the-hill-2/backend/sockets"
@@ -33,31 +32,19 @@ func main() {
 	apiRouter.HandleFunc("POST /api/sessions/{sessionID}/timer/start", handlers.StartTimer(db))
 	apiRouter.HandleFunc("POST /api/sessions/{sessionID}/timer/stop", handlers.StopTimer(db))
 
+	// Web Socket
+	hub := sockets.NewHub()
+	go hub.Run()
+
+	apiRouter.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		sockets.ServeWs(hub, w, r)
+	})
+
 	srv := &http.Server{
 		Addr:    "0.0.0.0:" + port,
 		Handler: apiRouter,
 	}
 
-
-	hub := sockets.NewHub()
-    go hub.Run()
-
-    // Create a new router for the WebSocket server
-    wsRouter := mux.NewRouter()
-    wsRouter.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-        sockets.ServeWs(hub, w, r)
-    })
-
-    // Start the main API server
-    go func() {
-		log.Fatal(srv.ListenAndServe())
-    }()
-
-    // Start the WebSocket server
-	websocketServer := &http.Server{
-		Addr:    "0.0.0.0:8081",
-		Handler: wsRouter,
-	}
-
-	log.Fatal(websocketServer.ListenAndServe())
+	// Start the main API server
+	log.Fatal(srv.ListenAndServe())
 }
